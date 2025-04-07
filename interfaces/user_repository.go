@@ -118,3 +118,44 @@ func (u *UserRepositoryImpl) UpdateUserProfile(email string, updatedUser models.
 	}
 	return nil
 }
+
+func (u UserRepositoryImpl) RegisterUserWithVerification(user models.User, token string) error {
+	tx, err := u.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query := `INSERT INTO users (name, age, token, phone, password, job, country, role) 
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+
+	_, err = tx.Exec(query, user.Name, user.Age, token, user.Phone, user.Password, user.Job, user.Country, user.Role)
+	if err != nil {
+		return err
+	}
+
+	verificationQuery := "INSERT INTO verification_tokens (email, token) VALUES ($1, $2)"
+	_, err = tx.Exec(verificationQuery, user.Email, token)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (u *UserRepositoryImpl) FindEmailByVerificationToken(token string) (string, error) {
+	var email string
+	query := `SELECT email FROM verification_tokens WHERE token = $1`
+	err := u.DB.QueryRow(query, token).Scan(&email)
+	if err != nil {
+		return "", err
+	}
+	return email, nil
+}
+
+func (u *UserRepositoryImpl) MarkEmailAsVerified(email string) error {
+	query := `UPDATE users SET email_verified = TRUE WHERE email = $1`
+	_, err := u.DB.Exec(query, email)
+	return err
+}

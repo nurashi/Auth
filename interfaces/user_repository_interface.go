@@ -9,4 +9,7 @@ type UserRepository interface {
 	Login(email string, password string) (int, error)
 	GetRole(email string) (string, error)
 	UpdateUserProfile(email string, updatedUser models.User) error
+	RegisterUserWithVerification(user models.User, token string) error
+	FindEmailByVerificationToken(token string) (string, error)
+	MarkEmailAsVerified(email string) error
 }

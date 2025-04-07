@@ -1,7 +1,9 @@
 package jwtAuth
 
 import (
+	"crypto/rand"
 	"github.com/golang-jwt/jwt/v5"
+	"math/big"
 	"time"
 )
 
@@ -35,4 +37,20 @@ func ParseToken(tokenString string) (*Claims, error) {
 		return nil, err
 	}
 	return claims, nil
+}
+
+func GenerateEmailVerificationToken() (string, error) {
+	const tokenLength = 6
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+	token := make([]byte, tokenLength)
+	for i := range token {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		token[i] = charset[num.Int64()]
+	}
+
+	return string(token), nil
 }

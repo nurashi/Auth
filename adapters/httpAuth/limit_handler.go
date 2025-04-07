@@ -25,7 +25,7 @@ func RateLimitHandler() gin.HandlerFunc {
 			c.Next()
 
 		default:
-			// like else
+			// like else, generally its work every time if c.Next not worked
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"message": "too many requests",
 			})
