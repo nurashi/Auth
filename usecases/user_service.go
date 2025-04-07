@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"attempt/adapters/httpAuth"
 	"attempt/interfaces"
 	"attempt/models"
 	"attempt/utils/hash"
@@ -56,11 +57,48 @@ func (u *UserServiceImpl) Register(c *gin.Context) {
 
 	newUser.Password = hashedPassword
 
-	if err := u.UserRepo.RegisterUser(newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Error with RegisterUser"})
+	verificationToken, err := jwtAuth.GenerateEmailVerificationToken()
+
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"message": "eerror with verification of email"})
 		return
 	}
+
+	err = u.UserRepo.RegisterUserWithVerification(newUser, verificationToken)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"message": "eerror with verification of email SECOND"})
+		return
+	}
+
+	go httpAuth.SendVerificationEmail(newUser.Email, verificationToken)
+
+	//if err := u.UserRepo.RegisterUser(newUser); err != nil {
+	//	c.JSON(http.StatusBadRequest, gin.H{"message": "Error with RegisterUser"})
+	//	return
+	//}
 	c.JSON(http.StatusOK, gin.H{"message": "registreated == true"})
+}
+
+func (u *UserServiceImpl) VerifyEmail(c *gin.Context) {
+	token := c.DefaultQuery("token", "")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "token is empty"})
+		return
+	}
+
+	email, err := u.UserRepo.FindEmailByVerificationToken(token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "email does not exist"})
+		return
+	}
+
+	err = u.UserRepo.MarkEmailAsVerified(email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error with MarkEmailAsVerified"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "email verified"})
 }
 
 func (u *UserServiceImpl) Login(c *gin.Context) {

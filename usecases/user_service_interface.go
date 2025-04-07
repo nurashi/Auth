@@ -8,4 +8,5 @@ type UserService interface {
 	Login(c *gin.Context)
 	GetProfile(c *gin.Context)
 	UpdateProfile(c *gin.Context)
+	VerifyEmail(c *gin.Context)
 }
