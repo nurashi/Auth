@@ -97,9 +97,36 @@ func (u *UserServiceImpl) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Role error"})
 		return
 	}
-	// if role == "admin" {
 	c.JSON(http.StatusOK, gin.H{"token": token})
-	//} else {
-	//	c.JSON(http.StatusOK, gin.H{"message": "Login - OK"})
-	//}
+}
+
+func (u *UserServiceImpl) GetProfile(c *gin.Context) {
+	email, _ := c.Get("email")
+
+	user, err := u.UserRepo.FindByEmail(email.(string))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "No such email"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (u *UserServiceImpl) UpdateProfile(c *gin.Context) {
+	var updatedUser models.User
+
+	if err := c.ShouldBindJSON(&updatedUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid body request"})
+		return
+	}
+
+	email, _ := c.Get("email")
+
+	err := u.UserRepo.UpdateUserProfile(email.(string), updatedUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Error updating user profile"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "updated == true"})
 }

@@ -8,4 +8,5 @@ type UserRepository interface {
 	FindByEmail(string) (*models.User, error)
 	Login(email string, password string) (int, error)
 	GetRole(email string) (string, error)
+	UpdateUserProfile(email string, updatedUser models.User) error
 }

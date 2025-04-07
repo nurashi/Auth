@@ -107,3 +107,14 @@ func (u UserRepositoryImpl) GetRole(email string) (string, error) {
 
 	return role, nil
 }
+
+func (u *UserRepositoryImpl) UpdateUserProfile(email string, updatedUser models.User) error {
+	query := `UPDATE users 
+			  SET name = $1, age = $2, phone = $3, job = $4, country = $5
+			  WHERE email = $6`
+	_, err := u.DB.Exec(query, updatedUser.Name, updatedUser.Age, updatedUser.Phone, updatedUser.Job, updatedUser.Country, email)
+	if err != nil {
+		return err
+	}
+	return nil
+}

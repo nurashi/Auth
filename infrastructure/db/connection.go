@@ -25,7 +25,7 @@ func ConnectDB() {
 	sslmode := os.Getenv("DB_SSLMODE")
 
 	if host == "" || port == "" || user == "" || password == "" || dbname == "" {
-		log.Fatal("Missing required environment variables for DB connection")
+		log.Fatal("don't have some environment variables for DB connection")
 	}
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
@@ -38,10 +38,10 @@ func ConnectDB() {
 
 	err = database.Ping()
 	if err != nil {
-		log.Fatal("Database ping failed:", err)
+		log.Fatal("Database failed:", err)
 	}
 
 	DB = database
 
-	log.Println("Connected to PostgreSQL database successfully!")
+	log.Println("Connected to database which is postgres successfully!")
 }
