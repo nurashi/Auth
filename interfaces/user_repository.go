@@ -118,7 +118,6 @@ func (u *UserRepositoryImpl) UpdateUserProfile(email string, updatedUser models.
 	}
 	return nil
 }
-
 func (u UserRepositoryImpl) RegisterUserWithVerification(user models.User, token string) error {
 	tx, err := u.DB.Begin()
 	if err != nil {
@@ -126,17 +125,17 @@ func (u UserRepositoryImpl) RegisterUserWithVerification(user models.User, token
 	}
 	defer tx.Rollback()
 
-	query := `INSERT INTO users (name, age, token, phone, password, job, country, role) 
+	// Corrected user insert query (no token here)
+	query := `INSERT INTO users (name, age, email, phone, password, job, country, role) 
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-
-	_, err = tx.Exec(query, user.Name, user.Age, token, user.Phone, user.Password, user.Job, user.Country, user.Role)
+	_, err = tx.Exec(query, user.Name, user.Age, user.Email, user.Phone, user.Password, user.Job, user.Country, user.Role)
 	if err != nil {
 		return err
 	}
 
+	// Save the verification token
 	verificationQuery := "INSERT INTO verification_tokens (email, token) VALUES ($1, $2)"
 	_, err = tx.Exec(verificationQuery, user.Email, token)
-
 	if err != nil {
 		return err
 	}
