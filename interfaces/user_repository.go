@@ -53,17 +53,37 @@ func (u UserRepositoryImpl) RegisterUser(user models.User) error {
 	return nil
 }
 
-func (u UserRepositoryImpl) FindByEmail(email string) (int, error) {
-	query := "SELECT id FROM users WHERE email = $1"
+func (u UserRepositoryImpl) FindByEmail(email string) (*models.User, error) {
+	query := "SELECT id, name, age, email, phone, password, job, country FROM users WHERE email = $1"
+	var user models.User
 
+	err := u.DB.QueryRow(query, email).Scan(
+		&user.Id,
+		&user.Name,
+		&user.Age,
+		&user.Email,
+		&user.Phone,
+		&user.Password,
+		&user.Job,
+		&user.Country,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (u UserRepositoryImpl) Login(email string, password string) (int, error) {
+	query := "SELECT id, password FROM users WHERE email = $1"
 	row := u.DB.QueryRow(query, email)
 	var id int
-	err := row.Scan(&id)
-	if err != nil {
+	var hashedPassword string
+	if err := row.Scan(&id, &hashedPassword); err != nil {
 		if err == sql.ErrNoRows {
-			return 0, nil // its just a case when email exactly not found
+			return 0, nil
 		}
-		return 0, err // here can be any error with database
+		return 0, err
 	}
+
 	return id, nil
 }

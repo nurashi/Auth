@@ -41,8 +41,8 @@ func (u *UserServiceImpl) Register(c *gin.Context) {
 		return
 	}
 
-	selectedID, err := u.UserRepo.FindByEmail(newUser.Email)
-	if err == nil && selectedID > 0 {
+	_, err := u.UserRepo.FindByEmail(newUser.Email)
+	if err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Email already exists"})
 		return
 	}
@@ -60,4 +60,29 @@ func (u *UserServiceImpl) Register(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "registreated == true"})
+}
+
+func (u *UserServiceImpl) Login(c *gin.Context) {
+	var input struct {
+		Email string `json:"email"`
+		Pass  string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Error with login"})
+		return
+	}
+
+	user, err := u.UserRepo.FindByEmail(input.Email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "No such email"})
+		return
+	}
+
+	if !hash.CheckPasswordHash(input.Pass, user.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Login - OK"})
 }
