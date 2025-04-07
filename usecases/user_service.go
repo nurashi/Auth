@@ -4,6 +4,7 @@ import (
 	"attempt/interfaces"
 	"attempt/models"
 	"attempt/utils/hash"
+	"attempt/utils/jwtAuth"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -84,5 +85,21 @@ func (u *UserServiceImpl) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login - OK"})
+	token, err := jwtAuth.GenerateToken(user.Email, user.Role)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Error generating token"})
+		return
+	}
+
+	_, err = u.UserRepo.GetRole(input.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Role error"})
+		return
+	}
+	// if role == "admin" {
+	c.JSON(http.StatusOK, gin.H{"token": token})
+	//} else {
+	//	c.JSON(http.StatusOK, gin.H{"message": "Login - OK"})
+	//}
 }

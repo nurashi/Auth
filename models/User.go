@@ -9,4 +9,5 @@ type User struct {
 	Password string `json:"password"`
 	Job      string `json:"job"`
 	Country  string `json:"country"`
+	Role     string `json:"role"`
 }
