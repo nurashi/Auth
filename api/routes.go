@@ -14,8 +14,13 @@ func ServeRoutes(userService usecases.UserService) {
 	 */
 	router.GET("api/users", httpAuth.JWTAuthMiddleware(), httpAuth.AdminMiddleWare(), userService.GetUsers)
 
+	// only after auth
+	router.GET("api/profile", httpAuth.JWTAuthMiddleware(), userService.GetProfile)
+	router.PUT("api/profile", httpAuth.JWTAuthMiddleware(), userService.UpdateProfile)
+
 	// public router(just access to endpoint), if someone try to get access to other endpoint, programm will change their link to this two ones.
 	router.POST("/api/register", userService.Register)
 	router.POST("api/login", userService.Login)
+
 	router.Run(":8080")
 }
