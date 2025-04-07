@@ -1,14 +1,20 @@
 package api
 
 import (
+	"attempt/adapters/httpAuth"
 	"attempt/usecases"
 	"github.com/gin-gonic/gin"
 )
 
 func ServeRoutes(userService usecases.UserService) {
 	router := gin.Default()
-	router.GET("/api/users", userService.GetUsers)
 
+	/* JWTAuthMiddleware() -> its a first stage of security, used to every endpoint
+	*  AdminMiddleWare() -> its a second stage of security, used to endpoint which are for admin
+	 */
+	router.GET("api/users", httpAuth.JWTAuthMiddleware(), httpAuth.AdminMiddleWare(), userService.GetUsers)
+
+	// public router(just access to endpoint), if someone try to get access to other endpoint, programm will change their link to this two ones.
 	router.POST("/api/register", userService.Register)
 	router.POST("api/login", userService.Login)
 	router.Run(":8080")

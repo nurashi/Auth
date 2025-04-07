@@ -7,4 +7,5 @@ type UserRepository interface {
 	RegisterUser(user models.User) error
 	FindByEmail(string) (*models.User, error)
 	Login(email string, password string) (int, error)
+	GetRole(email string) (string, error)
 }

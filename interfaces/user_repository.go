@@ -3,6 +3,7 @@ package interfaces
 import (
 	"attempt/models"
 	"database/sql"
+	"fmt"
 )
 
 type UserRepositoryImpl struct {
@@ -54,7 +55,7 @@ func (u UserRepositoryImpl) RegisterUser(user models.User) error {
 }
 
 func (u UserRepositoryImpl) FindByEmail(email string) (*models.User, error) {
-	query := "SELECT id, name, age, email, phone, password, job, country FROM users WHERE email = $1"
+	query := "SELECT id, name, age, email, phone, password, job, country, role FROM users WHERE email = $1"
 	var user models.User
 
 	err := u.DB.QueryRow(query, email).Scan(
@@ -66,6 +67,7 @@ func (u UserRepositoryImpl) FindByEmail(email string) (*models.User, error) {
 		&user.Password,
 		&user.Job,
 		&user.Country,
+		&user.Role,
 	)
 	if err != nil {
 		return nil, err
@@ -86,4 +88,22 @@ func (u UserRepositoryImpl) Login(email string, password string) (int, error) {
 	}
 
 	return id, nil
+}
+
+func (u UserRepositoryImpl) GetRole(email string) (string, error) {
+	query := "SELECT role FROM users WHERE email = $1"
+	row := u.DB.QueryRow(query, email)
+
+	var role string
+	err := row.Scan(&role)
+
+	if err == sql.ErrNoRows {
+		return "", fmt.Errorf("no user found with email %s", email)
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return role, nil
 }
