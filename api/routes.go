@@ -20,7 +20,7 @@ func ServeRoutes(userService usecases.UserService) {
 
 	// public router(just access to endpoint), if someone try to get access to other endpoint, programm will change their link to this two ones.
 	router.POST("/api/register", userService.Register)
-	router.POST("api/login", userService.Login)
+	router.POST("api/login", httpAuth.RateLimitHandler(), userService.Login)
 
 	router.Run(":8080")
 }
