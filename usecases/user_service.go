@@ -66,7 +66,7 @@ func (u *UserServiceImpl) Register(c *gin.Context) {
 
 	err = u.UserRepo.RegisterUserWithVerification(newUser, verificationToken)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"message": "eerror with verification of email SECOND"})
+		c.JSON(http.StatusBadGateway, gin.H{"Error": err.Error()})
 		return
 	}
 
@@ -94,7 +94,7 @@ func (u *UserServiceImpl) VerifyEmail(c *gin.Context) {
 
 	err = u.UserRepo.MarkEmailAsVerified(email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error with MarkEmailAsVerified"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
 		return
 	}
 
