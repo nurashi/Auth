@@ -6,6 +6,7 @@ import (
 	"attempt/models"
 	"attempt/utils/hash"
 	"attempt/utils/jwtAuth"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -112,30 +113,31 @@ func (u *UserServiceImpl) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := u.UserRepo.FindByEmail(input.Email)
+	token, err := u.LoginLogic(input.Email, input.Pass)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "No such email"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
-	if !hash.CheckPasswordHash(input.Pass, user.Password) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid password"})
-		return
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func (u *UserServiceImpl) LoginLogic(email, password string) (string, error) {
+	user, err := u.UserRepo.FindByEmail(email)
+	if err != nil {
+		return "", fmt.Errorf("no such email")
+	}
+
+	if !hash.CheckPasswordHash(password, user.Password) {
+		return "", fmt.Errorf("invalid password")
 	}
 
 	token, err := jwtAuth.GenerateToken(user.Email, user.Role)
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Error generating token"})
-		return
+		return "", fmt.Errorf("token generation error")
 	}
 
-	_, err = u.UserRepo.GetRole(input.Email)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Role error"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	return token, nil
 }
 
 func (u *UserServiceImpl) GetProfile(c *gin.Context) {
