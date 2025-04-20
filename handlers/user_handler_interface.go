@@ -1,4 +1,4 @@
-package usecases
+package handlers
 
 import "github.com/gin-gonic/gin"
 
@@ -10,4 +10,5 @@ type UserService interface {
 	GetProfile(c *gin.Context)
 	UpdateProfile(c *gin.Context)
 	VerifyEmail(c *gin.Context)
+	Welcome(c *gin.Context)
 }

@@ -46,8 +46,8 @@ func (u UserRepositoryImpl) GetUsers() ([]models.User, error) {
 }
 
 func (u UserRepositoryImpl) RegisterUser(user models.User) error {
-	query := "INSERT INTO users (name, age, email, phone, password, job, country) VALUES ($1, $2, $3, $4, $5, $6, $7)"
-	_, err := u.DB.Exec(query, user.Name, user.Age, user.Email, user.Phone, user.Password, user.Job, user.Country)
+	query := "INSERT INTO users (name, age, email, phone, password, job, country, picture) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	_, err := u.DB.Exec(query, user.Name, user.Age, user.Email, user.Phone, user.Password, user.Job, user.Country, user.Picture)
 	if err != nil {
 		return err
 	}
@@ -79,8 +79,7 @@ func (u UserRepositoryImpl) Login(email string, password string) (int, error) {
 	query := "SELECT id, password FROM users WHERE email = $1"
 	row := u.DB.QueryRow(query, email)
 	var id int
-	var hashedPassword string
-	if err := row.Scan(&id, &hashedPassword); err != nil {
+	if err := row.Scan(&id); err != nil {
 		if err == sql.ErrNoRows {
 			return 0, nil
 		}
@@ -125,7 +124,6 @@ func (u UserRepositoryImpl) RegisterUserWithVerification(user models.User, token
 	}
 	defer tx.Rollback()
 
-	// Corrected user insert query (no token here)
 	query := `INSERT INTO users (name, age, email, phone, password, job, country, role) 
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 	_, err = tx.Exec(query, user.Name, user.Age, user.Email, user.Phone, user.Password, user.Job, user.Country, user.Role)
@@ -133,7 +131,6 @@ func (u UserRepositoryImpl) RegisterUserWithVerification(user models.User, token
 		return err
 	}
 
-	// Save the verification token
 	verificationQuery := "INSERT INTO verification_tokens (email, token) VALUES ($1, $2)"
 	_, err = tx.Exec(verificationQuery, user.Email, token)
 	if err != nil {
@@ -157,4 +154,23 @@ func (u *UserRepositoryImpl) MarkEmailAsVerified(email string) error {
 	query := `UPDATE users SET email_verified = TRUE WHERE email = $1`
 	_, err := u.DB.Exec(query, email)
 	return err
+}
+
+
+func (u *UserRepositoryImpl)FindOrCreateUser(email, name, picture string) (*models.User, error){
+	user, err := u.FindByEmail(email)
+	if err == nil {
+		return user, nil
+	}
+
+	newUser := &models.User{
+		Email: email,
+		Name: name,
+		Picture: picture,
+		Role: "user",
+	}
+
+	err = u.RegisterUser(*newUser);
+	return newUser, err;
+
 }

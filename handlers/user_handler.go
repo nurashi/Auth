@@ -1,4 +1,4 @@
-package usecases
+package handlers
 
 import (
 	"attempt/adapters/httpAuth"
@@ -169,4 +169,11 @@ func (u *UserServiceImpl) UpdateProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "updated == true"})
+}
+
+func (u *UserServiceImpl) Welcome(c *gin.Context) {
+	claims, _ := c.Get("claims")
+	userClaims := claims.(jwtAuth.Claims);
+
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Data, %s", userClaims.Email)})
 }

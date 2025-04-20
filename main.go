@@ -2,10 +2,10 @@ package main
 
 import (
 	"attempt/api"
+	"attempt/handlers"
 	"attempt/infrastructure/config"
 	"attempt/infrastructure/db"
 	"attempt/interfaces"
-	"attempt/usecases"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -23,10 +23,10 @@ func main() {
 	config.InitGoogleOAuthConfig()
 
 	userRepo := interfaces.NewUserRepository(db.DB)
-	userService := usecases.NewUserService(userRepo)
-	api.ServeRoutes(userService)
+	userService := handlers.NewUserService(userRepo)
+	api.ServeRoutes(userService, userRepo)
 
 	r := gin.Default()
-	api.RegisterAuthRoutes(r)
+	api.RegisterAuthRoutes(r, userRepo)
 
 }

@@ -12,4 +12,5 @@ type UserRepository interface {
 	RegisterUserWithVerification(user models.User, token string) error
 	FindEmailByVerificationToken(token string) (string, error)
 	MarkEmailAsVerified(email string) error
+	FindOrCreateUser(email, name, picture string) (*models.User, error)
 }

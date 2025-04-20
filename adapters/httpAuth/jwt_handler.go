@@ -21,7 +21,6 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
-
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")

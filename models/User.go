@@ -11,4 +11,5 @@ type User struct {
 	Country       string `json:"country"`
 	Role          string `json:"role"`
 	EmailVerified bool   `json:"email_verified"`
+	Picture  	  string `json:"picture"`
 }
