@@ -12,18 +12,22 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data 
 
   app:
     build: .
     container_name: auth_app
     restart: always
     ports:
-      - "8080:8080"
+      - "8080:8080" 
     env_file:
-      - .env
+      - .env 
     depends_on:
-      - db
+      - db 
+    volumes:
+      - .:/app
+      - go-modules:/go/pkg/mod
 
 volumes:
   db_data:
+  go-modules: 
